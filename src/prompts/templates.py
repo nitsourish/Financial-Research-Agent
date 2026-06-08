@@ -22,14 +22,14 @@ Be specific, quantitative, and professional. output to be produced strictly in J
 
 {news_summary}
 
-Provide:
-1. Overall sentiment assessment (positive/neutral/negative)
-2. Key themes from the news
-3. Potential impact on stock performance
-4. Notable risks or opportunities mentioned
-
-At the end, include a line:
-SENTIMENT_SCORE: [0.0 to 1.0 where 0=very negative, 0.5=neutral, 1.0=very positive]. output to be produced strictly in JSON format"""
+Return ONLY a JSON object with these exact keys (no markdown, no code blocks):
+{{
+  "overall_sentiment": "positive | neutral | negative",
+  "key_themes": ["theme1", "theme2"],
+  "potential_impact": "description of potential stock impact",
+  "risks_opportunities": "notable risks or opportunities",
+  "SENTIMENT_SCORE": <float 0.0 to 1.0, where 0=very negative, 0.5=neutral, 1.0=very positive>
+}}"""
 
     EXECUTIVE_SUMMARY = """You are an investment analyst. Create an executive summary for {company_name} ({ticker}) based on:
 
@@ -65,16 +65,18 @@ Sentiment Score: {sentiment_score}
 Sentiment Analysis:
 {sentiment_analysis}
 
-Create a detailed report with these sections:
-1. Company Overview
-2. Financial Performance Analysis
-3. Market Position and Sentiment
-4. Valuation Assessment
-5. Risk Factors
-6. Investment Recommendation
+Return ONLY a JSON object with these exact keys (no markdown, no code blocks):
+{{
+  "company_overview": "...",
+  "financial_performance": "...",
+  "market_position_and_sentiment": "...",
+  "valuation_assessment": "...",
+  "risk_factors": "...",
+  "investment_recommendation": "...",
+  "RECOMMENDATION": "BUY | SELL | HOLD",
+  "CONFIDENCE": <float 0.0 to 1.0, based on strength and consistency of evidence>
+}}
 
-At the end, include:
-RECOMMENDATION: [BUY/SELL/HOLD]
-CONFIDENCE: [0.0 to 1.0]
-
-Be thorough, professional, and data-driven.output to be produced strictly in JSON format"""
+RECOMMENDATION must be one of: BUY, SELL, or HOLD — choose based on the actual data, do NOT default to HOLD unless the evidence is truly mixed.
+CONFIDENCE must reflect how strongly the data supports the recommendation (e.g. 0.8+ for strong conviction, 0.5-0.7 for moderate, below 0.5 for weak).
+Be thorough, professional, and data-driven."""

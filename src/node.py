@@ -118,7 +118,7 @@ class ResearchAgentNode:
         agent = prompt | self.primary_model | JsonOutputParser()
         response=agent.invoke(input=news_data)
         state['sentiment_analysis'] = str(response)
-        state['sentiment_score'] = response.get('SENTIMENT_SCORE', 0.5)
+        state['sentiment_score'] = response.get('SENTIMENT_SCORE') or response.get('sentiment_score', 0.5)
         state['current_stage'] = 'analyze_sentiment'
         return state
     
@@ -163,8 +163,8 @@ class ResearchAgentNode:
         agent = prompt | self.primary_model | JsonOutputParser()
         response = agent.invoke(input=report_input)
 
-        state['recommendation'] = response.get('RECOMMENDATION', 'HOLD')
-        state['confidence_score'] = response.get('CONFIDENCE', 0.5)
+        state['recommendation'] = response.get('RECOMMENDATION') or response.get('recommendation', 'HOLD')
+        state['confidence_score'] = response.get('CONFIDENCE') or response.get('confidence', 0.5)
         
        
         state['detailed_report'] = str(response)
@@ -197,5 +197,12 @@ class ResearchAgentNode:
             return "needs_improvement"
         
     def complete_workflow(self, state):
-          state['current_stage'] = 'completed'
-          return state  
+        state['current_stage'] = 'completed'
+        # Merge live price fields from yfinance (financial_data) into market_data
+        financial = state.get('financial_data') or {}
+        if financial and state.get('market_data'):
+            for key in ['current_price', 'market_cap', 'pe_ratio', 'beta',
+                        '52_week_high', '52_week_low', 'dividend_yield', 'sector', 'industry']:
+                if financial.get(key) is not None:
+                    state['market_data'][key] = financial[key]
+        return state
