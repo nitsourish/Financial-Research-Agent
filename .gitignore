@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.json
+*.log
+reports/
+.DS_Store
+*.ipynb
