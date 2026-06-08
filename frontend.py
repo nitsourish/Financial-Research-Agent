@@ -2,7 +2,7 @@ import time
 import requests
 import streamlit as st
 
-API_URL = "http://localhost:8000"
+API_URL = "https://financial-research-agent.onrender.com"
 
 st.set_page_config(page_title="Financial Research Agent", page_icon="📈", layout="wide")
 st.title("📈 Financial Research Agent")
