@@ -41,34 +41,32 @@ class ResearchAgentNode:
     
     def fetch_financial(self, state: ResearchState) -> dict:
         key = f"financials:{state['ticker']}"
-        if self.config.CACHE_ENABLED:
-            cached_data = self.cache.get(key)
+        cached_data = self.cache.get(key) if self.config.CACHE_ENABLED else None
         if cached_data:
             print('cache hit')
             return {'financial_data': cached_data}
-        financial_data = self.market_research_manager.get_market_data(state['ticker']) 
+        financial_data = self.market_research_manager.get_market_data(state['ticker'])
         if financial_data:
-            self.cache.set(key,financial_data)
-            return {'financial_data':financial_data}
-        
+            self.cache.set(key, financial_data)
+            return {'financial_data': financial_data}
+
         print(f"Error in fetching financial data for {state['ticker']}")
-        return {'errors':[f"Error in fetching financial data for {state['ticker']}"], 'needs_retry':['financial_data']}  
-        
+        return {'errors': [f"Error in fetching financial data for {state['ticker']}"], 'needs_retry': ['financial_data']}
+
 
     def fetch_news_data(self, state: ResearchState) -> dict:
         key = f"market news:{state['ticker']}"
-        if self.config.CACHE_ENABLED:
-            cached_data = self.cache.get(key)
+        cached_data = self.cache.get(key) if self.config.CACHE_ENABLED else None
         if cached_data:
             print('cache hit')
-            return {'news_articles':cached_data}
-        news_articles = self.news_client_manager.get_news_data(state['ticker']) 
+            return {'news_articles': cached_data}
+        news_articles = self.news_client_manager.get_news_data(state['ticker'])
         if news_articles:
-            self.cache.set(key,news_articles)
+            self.cache.set(key, news_articles)
             return {'news_articles': news_articles}
 
         print(f"Error in fetching news_data for {state['ticker']}")
-        return {'errors':[f"Error in fetching news_data for {state['ticker']}"], 'needs_retry':['news_data']}  
+        return {'errors': [f"Error in fetching news_data for {state['ticker']}"], 'needs_retry': ['news_data']}
     
     
     def fetch_company_facts(self, state: ResearchState) -> dict:
@@ -118,7 +116,8 @@ class ResearchAgentNode:
         agent = prompt | self.primary_model | JsonOutputParser()
         response=agent.invoke(input=news_data)
         state['sentiment_analysis'] = str(response)
-        state['sentiment_score'] = response.get('SENTIMENT_SCORE') or response.get('sentiment_score', 0.5)
+        score = response.get('SENTIMENT_SCORE') or response.get('sentiment_score')
+        state['sentiment_score'] = float(score) if score is not None else 0.5
         state['current_stage'] = 'analyze_sentiment'
         return state
     
@@ -163,8 +162,10 @@ class ResearchAgentNode:
         agent = prompt | self.primary_model | JsonOutputParser()
         response = agent.invoke(input=report_input)
 
-        state['recommendation'] = response.get('RECOMMENDATION') or response.get('recommendation', 'HOLD')
-        state['confidence_score'] = response.get('CONFIDENCE') or response.get('confidence', 0.5)
+        rec = response.get('RECOMMENDATION') or response.get('recommendation', 'HOLD')
+        state['recommendation'] = str(rec).upper() if rec else 'HOLD'
+        conf = response.get('CONFIDENCE') or response.get('confidence')
+        state['confidence_score'] = float(conf) if conf is not None else 0.5
         
        
         state['detailed_report'] = str(response)
